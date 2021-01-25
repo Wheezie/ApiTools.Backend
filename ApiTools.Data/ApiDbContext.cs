@@ -26,6 +26,11 @@ namespace ApiTools.Data
         {
             base.OnModelCreating(builder);
 
+            builder.Ignore<ContentBase<uint>>();
+            builder.Ignore<ContentBase<ulong>>();
+            builder.Ignore<Post>();
+            builder.Ignore<Like>();
+
             #region Account
             builder.Entity<Account>(account =>
             {
@@ -100,6 +105,16 @@ namespace ApiTools.Data
                     .HasForeignKey(i => i.InviterId)
                     .OnDelete(DeleteBehavior.SetNull);
 
+                account.HasMany(a => a.Posts)
+                    .WithOne(p => p.Account)
+                    .HasForeignKey(p => p.AccountId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                account.HasMany(a => a.Albums)
+                    .WithOne(a => a.Account)
+                    .HasForeignKey(a => a.AccountId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
                 account.HasOne(a => a.Role)
                     .WithMany(r => r.Members)
                     .HasForeignKey(a => a.RoleId)
@@ -132,6 +147,85 @@ namespace ApiTools.Data
                     .IsRequired(false);
 
                 invite.HasKey(i => i.Token);
+            });
+            #endregion
+            #region Timeline
+            builder.Entity<TimelinePost>(post =>
+            {
+                post.HasBaseType((Type)null);
+
+                post.Property(p => p.Title)
+                    .HasMaxLength(100)
+                    .IsRequired()
+                    .IsUnicode();
+
+                post.Property(p => p.Content)
+                    .HasColumnType("TEXT")
+                    .HasMaxLength(65535)
+                    .IsRequired()
+                    .IsUnicode();
+
+                post.HasKey(p => new { p.Id, p.AccountId });
+
+                post.HasMany(p => p.Comments)
+                    .WithOne(c => c.Post)
+                    .HasForeignKey(c => new { c.PostId, c.AccountId })
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                post.HasMany(p => p.Pictures)
+                    .WithOne(p => p.Post)
+                    .HasForeignKey(p => new { p.PostId, p.AccountId })
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                post.HasMany(p => p.Likes)
+                    .WithOne(p => p.Post)
+                    .HasForeignKey(p => new { p.PostId, p.AccountId });
+            });
+            builder.Entity<TimelinePostComment>(comment =>
+            {
+                comment.Property(c => c.PostId)
+                    .IsRequired();
+
+                comment.Property(c => c.AccountId)
+                    .IsRequired();
+
+                comment.HasKey(c => new { c.CommentId, c.AccountId, c.PostId });
+
+                comment.HasOne(c => c.Account)
+                    .WithMany()
+                    .HasForeignKey(c => c.AccountId);
+
+                comment.HasOne(c => c.Comment)
+                    .WithOne()
+                    .HasForeignKey<TimelinePostComment>(c => c.CommentId);
+            });
+            builder.Entity<TimelinePostLike>(like =>
+            {
+                like.HasKey(l => new { l.AccountId, l.PostId, l.LikerId });
+
+                like.HasOne(l => l.Account)
+                    .WithMany()
+                    .HasForeignKey(l => l.AccountId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                like.HasOne(l => l.Liker)
+                    .WithMany()
+                    .HasForeignKey(l => l.LikerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<TimelinePostPicture>(picture =>
+            {
+                picture.HasKey(p => new { p.AccountId, p.PostId, p.PictureId });
+
+                picture.HasOne(p => p.Account)
+                    .WithMany()
+                    .HasForeignKey(p => p.AccountId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                picture.HasOne(p => p.Picture)
+                    .WithMany()
+                    .HasForeignKey(p => p.PictureId)
+                    .OnDelete(DeleteBehavior.ClientCascade);
             });
             #endregion
             #region Picture
