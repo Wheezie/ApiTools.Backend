@@ -12,7 +12,7 @@ namespace ApiTools.Domain.Data
         /// <summary>
         /// Album identifier
         /// </summary>
-        public uint Id { get; set; }
+        public uint AlbumId { get; set; }
 
         /// <summary>
         /// Album

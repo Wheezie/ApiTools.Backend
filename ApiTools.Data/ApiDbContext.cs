@@ -9,13 +9,34 @@ namespace ApiTools.Data
 {
     public class ApiDbContext : IdentityDbContext<Account, Role, ulong>
     {
-        public DbSet<Account> Accounts { get; set; }
+        /* Account */
+        // Accounts are in the Users DbSet inherited from Identity
         public DbSet<AccountEmail> Emails { get; set; }
         public DbSet<AccountInvite> Invites { get; set; }
 
-        public ApiDbContext()
-        {
-        }
+        /* Album */
+        public DbSet<Album> Albums { get; set; }
+        public DbSet<AlbumLike> AlbumLikes { get; set; }
+        public DbSet<AlbumPicture> AlbumPictures { get; set; }
+
+        /* Blog */
+        public DbSet<Blog> Blogs { get; set; }
+        public DbSet<BlogAccess> BlogAccesses { get; set; }
+        public DbSet<BlogPost> BlogPosts { get; set; }
+        public DbSet<BlogPostComment> BlogPostComments { get; set; }
+
+        /* Comment */
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<CommentReply> CommentReplies { get; set; }
+
+        /* Pictures */
+        public DbSet<Picture> Pictures { get; set; }
+        public DbSet<PictureLike> PictureLikes { get; set; }
+
+        /* Role */
+        // Roles are in the Roles DbSet inherited from Identity
+        public DbSet<RolePermission> RolePermissions { get; set; }
+
 
         public ApiDbContext(DbContextOptions<ApiDbContext> options)
             : base(options)
@@ -26,10 +47,11 @@ namespace ApiTools.Data
         {
             base.OnModelCreating(builder);
 
+            builder.Ignore<AccessBase>();
             builder.Ignore<ContentBase<uint>>();
             builder.Ignore<ContentBase<ulong>>();
-            builder.Ignore<Post>();
             builder.Ignore<Like>();
+            builder.Ignore<Post>();
 
             #region Account
             builder.Entity<Account>(account =>
@@ -148,6 +170,237 @@ namespace ApiTools.Data
 
                 invite.HasKey(i => i.Token);
             });
+            #endregion          #region Album
+            #region Album
+            builder.Entity<Album>(album =>
+            {
+                album.Property(a => a.Name)
+                    .HasMaxLength(48)
+                    .IsRequired();
+
+                album.Property(a => a.Description)
+                    .HasMaxLength(256)
+                    .IsRequired(false);
+
+                album.HasOne(a => a.Account)
+                    .WithMany(a => a.Albums)
+                    .HasForeignKey(a => a.AccountId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+            builder.Entity<AlbumLike>(like =>
+            {
+                like.HasKey(l => new { l.AlbumId, l.LikerId });
+
+                like.HasOne(l => l.Liker)
+                    .WithMany()
+                    .HasForeignKey(l => l.LikerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                like.HasOne(l => l.Album)
+                    .WithMany(a => a.Likes)
+                    .HasForeignKey(l => l.AlbumId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<AlbumPicture>(picture =>
+            {
+                picture.HasKey(p => new { p.Id, p.PictureId });
+
+                picture.HasOne(p => p.Album)
+                    .WithMany(a => a.Pictures)
+                    .HasForeignKey(p => p.Id)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                picture.HasOne(p => p.Picture)
+                    .WithOne()
+                    .HasForeignKey<AlbumPicture>(p => p.PictureId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+            #region Blog
+            builder.Entity<Blog>(blog =>
+            {
+                blog.Property(b => b.Name)
+                    .HasMaxLength(48)
+                    .IsRequired()
+                    .IsUnicode();
+
+                blog.Property(b => b.Description)
+                    .HasMaxLength(256)
+                    .IsUnicode();
+
+                blog.HasOne(b => b.Creator)
+                    .WithMany(a => a.Blogs)
+                    .HasForeignKey(b => b.CreatorId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+            builder.Entity<BlogAccess>(access =>
+            {
+                access.HasKey(a => new { a.BlogId, a.AccountId });
+
+                access.HasOne(a => a.Account)
+                    .WithMany(b => b.BlogAccess)
+                    .HasForeignKey(a => a.AccountId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                access.HasOne(a => a.Blog)
+                    .WithMany(b => b.Access)
+                    .HasForeignKey(a => a.BlogId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<BlogPost>(post =>
+            {
+                post.HasBaseType((Type)null);
+
+                post.HasKey(p => new { p.Id, p.BlogId });
+
+                post.Property(p => p.AccountId)
+                    .IsRequired(false);
+
+                post.Property(p => p.Title)
+                    .HasMaxLength(128)
+                    .IsRequired()
+                    .IsUnicode();
+
+                post.Property(p => p.Content)
+                    .HasColumnType("TEXT")
+                    .HasMaxLength(65535)
+                    .IsRequired()
+                    .IsUnicode();
+
+                post.HasOne(p => p.Account)
+                    .WithMany(b => b.BlogPosts)
+                    .HasForeignKey(p => p.AccountId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                post.HasOne(p => p.Blog)
+                    .WithMany(b => b.Posts)
+                    .HasForeignKey(p => p.BlogId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<BlogPostComment>(comment =>
+            {
+                comment.HasKey(c => new { c.BlogId, c.PostId, c.CommentId });
+
+                comment.HasOne(c => c.Post)
+                    .WithMany(p => p.Comments)
+                    .HasForeignKey(c => new { c.BlogId, c.PostId })
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                comment.HasOne(c => c.Comment)
+                    .WithOne()
+                    .HasForeignKey<BlogPostComment>(c => c.CommentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+            #region Comment
+            builder.Entity<Comment>(comment =>
+            {
+                comment.Property(c => c.Content)
+                    .HasMaxLength(1024)
+                    .IsRequired()
+                    .IsUnicode();
+
+                comment.Property(c => c.AccountId)
+                    .IsRequired();
+
+                comment.HasOne(c => c.Account)
+                    .WithMany()
+                    .HasForeignKey(c => c.AccountId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<CommentReply>(reply =>
+            {
+                reply.HasKey(r => new { r.CommentId, r.ReplyId });
+
+                reply.HasOne(r => r.Reply)
+                    .WithOne()
+                    .HasForeignKey<CommentReply>(r => r.ReplyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                reply.HasOne(r => r.Comment)
+                    .WithMany(c => c.Replies)
+                    .HasForeignKey(r => r.CommentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+            #region Picture
+            builder.Entity<Picture>(picture =>
+            {
+                picture.Property(p => p.Uploaded);
+
+                picture.HasOne(p => p.Uploader)
+                    .WithMany()
+                    .HasForeignKey(p => p.UploaderId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+            builder.Entity<PictureLike>(like =>
+            {
+                like.HasKey(l => new { l.PictureId, l.LikerId });
+
+                like.HasOne(l => l.Picture)
+                    .WithMany(p => p.Likes)
+                    .HasForeignKey(l => l.PictureId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                like.HasOne(l => l.Liker)
+                    .WithMany()
+                    .HasForeignKey(l => l.LikerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+            #region Role
+            builder.Entity<Role>(role =>
+            {
+                role.HasKey(r => r.Id);
+
+                role.Property(r => r.ConcurrencyStamp)
+                    .HasMaxLength(36);
+
+                role.Property(r => r.Name)
+                    .HasMaxLength(32)
+                    .IsRequired();
+
+                role.Property(r => r.Description)
+                    .HasMaxLength(512);
+
+                role.HasData(
+                    new Role { Id = 1, Targets = 1000, Name = "Admin", NormalizedName = "ADMIN", Description = "Default admin role", Disabled = false }
+                );
+            });
+            builder.Entity<RolePermission>(perm =>
+            {
+                perm.HasKey(p => new { p.RoleId, p.Permission });
+
+                perm.HasOne(p => p.Role)
+                    .WithMany(r => r.Permissions)
+                    .HasForeignKey(p => p.RoleId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                perm.HasData(
+                    new RolePermission { RoleId = 1, Permission = "*", Target = 1000 }
+                );
+            });
+            #endregion
+            #region Session
+            builder.Entity<JwtSession>(session =>
+            {
+                session.HasKey(s => s.Id);
+
+                session.Property(s => s.AccountId)
+                    .IsRequired(false);
+
+                session.Property(s => s.Ip)
+                    .HasMaxLength(16);
+
+                session.Property(s => s.LastIp)
+                    .HasMaxLength(16);
+
+                session.HasOne(s => s.Account)
+                    .WithMany(s => s.Sessions)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
             #endregion
             #region Timeline
             builder.Entity<TimelinePost>(post =>
@@ -226,85 +479,6 @@ namespace ApiTools.Data
                     .WithMany()
                     .HasForeignKey(p => p.PictureId)
                     .OnDelete(DeleteBehavior.ClientCascade);
-            });
-            #endregion
-            #region Picture
-            builder.Entity<Picture>(picture =>
-            {
-                picture.Property(p => p.Uploaded);
-
-                picture.HasOne(p => p.Uploader)
-                    .WithMany()
-                    .HasForeignKey(p => p.UploaderId)
-                    .OnDelete(DeleteBehavior.SetNull);
-            });
-            builder.Entity<PictureLike>(like =>
-            {
-                like.HasKey(l => new { l.PictureId, l.AccountId });
-
-                like.HasOne(l => l.Picture)
-                    .WithMany(p => p.Likes)
-                    .HasForeignKey(l => l.PictureId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                like.HasOne(l => l.Account)
-                    .WithMany()
-                    .HasForeignKey(l => l.AccountId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-            #endregion
-            #region Role
-            builder.Entity<Role>(role =>
-            {
-                role.HasKey(r => r.Id);
-
-                role.Property(r => r.ConcurrencyStamp)
-                    .HasMaxLength(36);
-
-                role.Property(r => r.Name)
-                    .HasMaxLength(32)
-                    .IsRequired();
-
-                role.Property(r => r.Description)
-                    .HasMaxLength(512);
-
-                role.HasData(
-                    new Role { Id = 1, Targets = 1000, Name = "Admin", NormalizedName = "ADMIN", Description = "Default admin role", Disabled = false }
-                );
-            });
-            builder.Entity<RolePermission>(perm =>
-            {
-                perm.HasKey(p => new { p.RoleId, p.Permission });
-
-                perm.HasOne(p => p.Role)
-                    .WithMany(r => r.Permissions)
-                    .HasForeignKey(p => p.RoleId)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                perm.HasData(
-                    new RolePermission { RoleId = 1, Permission = "*", Target = 1000 }
-                );
-            });
-            #endregion
-            #region Session
-            builder.Entity<JwtSession>(session =>
-            {
-                session.HasKey(s => s.Id);
-
-                session.Property(s => s.AccountId)
-                    .IsRequired(false);
-
-                session.Property(s => s.Ip)
-                    .HasMaxLength(16);
-
-                session.Property(s => s.LastIp)
-                    .HasMaxLength(16);
-
-                session.HasOne(s => s.Account)
-                    .WithMany(s => s.Sessions)
-                    .IsRequired(false)
-                    .OnDelete(DeleteBehavior.SetNull);
             });
             #endregion
             #region UTC-hack

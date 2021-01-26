@@ -10,7 +10,7 @@ namespace ApiTools.Domain.Data
         /// <summary>
         /// Post identifier
         /// </summary>
-        public uint PostId { get; set; }
+        public uint PostId { get; set; } 
         public ulong CommentId { get; set; }
 
 
