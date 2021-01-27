@@ -67,43 +67,36 @@ namespace ApiTools.Domain.Data
         /// <summary>
         /// Corresponding email address list
         /// </summary>
-        public List<AccountEmail> Emails { get; set; }
-            = new List<AccountEmail>();
+        public ICollection<AccountEmail> Emails { get; set; }
         /// <summary>
         /// Created invite tokens
         /// </summary>
-        public List<AccountInvite> Invites { get; set; }
-            = new List<AccountInvite>();
+        public ICollection<AccountInvite> Invites { get; set; }
         /// <summary>
         /// Associated posts
         /// </summary>
         /// <value></value>
-        public List<TimelinePost> Posts { get; set; }
-            = new List<TimelinePost>();
+        public ICollection<TimelinePost> Posts { get; set; }
         /// <summary>
         /// Albums
         /// </summary>
-        public List<Album> Albums { get; set; }
-            = new List<Album>();
+        public ICollection<Album> Albums { get; set; }
         /// <summary>
         /// Created blogs
         /// </summary>
-        public List<Blog> Blogs { get; set; }
-            = new List<Blog>();
+        public ICollection<Blog> Blogs { get; set; }
         /// <summary>
         /// Blog access grants
         /// </summary>
-        public List<BlogAccess> BlogAccess { get; set; }
-            = new List<BlogAccess>();
+        public ICollection<BlogUserAccess> BlogAccess { get; set; }
         /// <summary>
         /// Posted blogposts
         /// </summary>
-        public List<BlogPost> BlogPosts { get; set; }
-            = new List<BlogPost>();
+        public ICollection<BlogPost> BlogPosts { get; set; }
         /// <summary>
         /// Login JWT sessions
         /// </summary>
-        public List<JwtSession> Sessions { get; set; }
+        public ICollection<JwtSession> Sessions { get; set; }
 
         /// <summary>
         /// Account invite

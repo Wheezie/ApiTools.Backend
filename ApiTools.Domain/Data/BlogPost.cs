@@ -12,8 +12,7 @@ namespace ApiTools.Domain.Data
         /// <summary>
         /// Comments
         /// </summary>
-        public List<BlogPostComment> Comments { get; set; }
-            = new List<BlogPostComment>();
+        public ICollection<Comment> Comments { get; set; }
 
 
         /// <summary>

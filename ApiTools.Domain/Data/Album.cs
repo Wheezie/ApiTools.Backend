@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace ApiTools.Domain.Data
 {
@@ -25,10 +20,8 @@ namespace ApiTools.Domain.Data
         /// Album description
         /// </summary>
         public string Description { get; set; }
-        public List<AlbumPicture> Pictures { get; set; }
-            = new List<AlbumPicture>();
-        public List<AlbumLike> Likes { get; set; }
-            = new List<AlbumLike>();
+        public ICollection<Picture> Pictures { get; set; }
+        public ICollection<AlbumLike> Likes { get; set; }
 
 
         /// <summary>

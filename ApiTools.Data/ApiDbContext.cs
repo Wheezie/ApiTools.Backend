@@ -17,13 +17,11 @@ namespace ApiTools.Data
         /* Album */
         public DbSet<Album> Albums { get; set; }
         public DbSet<AlbumLike> AlbumLikes { get; set; }
-        public DbSet<AlbumPicture> AlbumPictures { get; set; }
 
         /* Blog */
         public DbSet<Blog> Blogs { get; set; }
-        public DbSet<BlogAccess> BlogAccesses { get; set; }
+        public DbSet<BlogUserAccess> BlogAccesses { get; set; }
         public DbSet<BlogPost> BlogPosts { get; set; }
-        public DbSet<BlogPostComment> BlogPostComments { get; set; }
 
         /* Comment */
         public DbSet<Comment> Comments { get; set; }
@@ -47,7 +45,7 @@ namespace ApiTools.Data
         {
             base.OnModelCreating(builder);
 
-            builder.Ignore<AccessBase>();
+            builder.Ignore<UserAccess>();
             builder.Ignore<ContentBase<uint>>();
             builder.Ignore<ContentBase<ulong>>();
             builder.Ignore<Like>();
@@ -101,8 +99,8 @@ namespace ApiTools.Data
 
                 account.HasOne(a => a.Picture)
                     .WithOne()
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .IsRequired(false);
 
                 account.HasMany(a => a.Emails)
                     .WithOne(e => e.Account)
@@ -111,17 +109,22 @@ namespace ApiTools.Data
 
                 account.HasOne(a => a.ProfileEmail)
                     .WithOne()
-                    .HasForeignKey<Account>(a => a.ProfileEmailId);
+                    .HasForeignKey<Account>(a => a.ProfileEmailId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(false);
 
                 account.HasOne(a => a.PrimaryEmail)
                     .WithOne()
-                    .HasForeignKey<Account>(a => a.Email);
-
+                    .HasForeignKey<Account>(a => a.Email)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                // Delete invite if user is removed.
                 account.HasOne(a => a.Invite)
                     .WithOne(i => i.Acceptor)
                     .HasForeignKey<AccountInvite>(i => i.AcceptorId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+                // Set inviter to null if inviter is removed.
                 account.HasMany(a => a.Invites)
                     .WithOne(i => i.Inviter)
                     .HasForeignKey(i => i.InviterId)
@@ -170,7 +173,7 @@ namespace ApiTools.Data
 
                 invite.HasKey(i => i.Token);
             });
-            #endregion          #region Album
+            #endregion
             #region Album
             builder.Entity<Album>(album =>
             {
@@ -186,6 +189,10 @@ namespace ApiTools.Data
                     .WithMany(a => a.Albums)
                     .HasForeignKey(a => a.AccountId)
                     .OnDelete(DeleteBehavior.SetNull);
+
+                album.HasMany(a => a.Pictures)
+                    .WithOne()
+                    .OnDelete(DeleteBehavior.Cascade);
             });
             builder.Entity<AlbumLike>(like =>
             {
@@ -199,20 +206,6 @@ namespace ApiTools.Data
                 like.HasOne(l => l.Album)
                     .WithMany(a => a.Likes)
                     .HasForeignKey(l => l.AlbumId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-            builder.Entity<AlbumPicture>(picture =>
-            {
-                picture.HasKey(p => new { p.Id, p.PictureId });
-
-                picture.HasOne(p => p.Album)
-                    .WithMany(a => a.Pictures)
-                    .HasForeignKey(p => p.Id)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                picture.HasOne(p => p.Picture)
-                    .WithOne()
-                    .HasForeignKey<AlbumPicture>(p => p.PictureId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
             #endregion
@@ -233,17 +226,35 @@ namespace ApiTools.Data
                     .HasForeignKey(b => b.CreatorId)
                     .OnDelete(DeleteBehavior.SetNull);
             });
-            builder.Entity<BlogAccess>(access =>
+            builder.Entity<BlogUserAccess>(access =>
             {
-                access.HasKey(a => new { a.BlogId, a.AccountId });
+                access.HasBaseType((Type)null);
 
-                access.HasOne(a => a.Account)
-                    .WithMany(b => b.BlogAccess)
-                    .HasForeignKey(a => a.AccountId)
+                access.HasKey(ba => new { ba.BlogId, ba.AccountId });
+
+                access.HasOne(ba => ba.Account)
+                    .WithMany(a => a.BlogAccess)
+                    .HasForeignKey(ba => ba.AccountId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                access.HasOne(ba => ba.Blog)
+                    .WithMany(b => b.UserAccess)
+                    .HasForeignKey(ba => ba.BlogId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<BlogRoleAccess>(access =>
+            {
+                access.HasBaseType((Type)null);
+
+                access.HasKey(ba => new { ba.BlogId, ba.RoleId });
+
+                access.HasOne(ba => ba.Role)
+                    .WithMany(r => r.BlogAccess)
+                    .HasForeignKey(ba => ba.RoleId)
                     .OnDelete(DeleteBehavior.Cascade);
 
                 access.HasOne(a => a.Blog)
-                    .WithMany(b => b.Access)
+                    .WithMany(b => b.RoleAccess)
                     .HasForeignKey(a => a.BlogId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
@@ -276,19 +287,9 @@ namespace ApiTools.Data
                     .WithMany(b => b.Posts)
                     .HasForeignKey(p => p.BlogId)
                     .OnDelete(DeleteBehavior.Cascade);
-            });
-            builder.Entity<BlogPostComment>(comment =>
-            {
-                comment.HasKey(c => new { c.BlogId, c.PostId, c.CommentId });
 
-                comment.HasOne(c => c.Post)
-                    .WithMany(p => p.Comments)
-                    .HasForeignKey(c => new { c.BlogId, c.PostId })
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                comment.HasOne(c => c.Comment)
+                post.HasMany(p => p.Comments)
                     .WithOne()
-                    .HasForeignKey<BlogPostComment>(c => c.CommentId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
             #endregion
@@ -385,6 +386,8 @@ namespace ApiTools.Data
             #region Session
             builder.Entity<JwtSession>(session =>
             {
+                session.ToTable("sessions");
+
                 session.HasKey(s => s.Id);
 
                 session.Property(s => s.AccountId)
@@ -421,36 +424,16 @@ namespace ApiTools.Data
                 post.HasKey(p => new { p.Id, p.AccountId });
 
                 post.HasMany(p => p.Comments)
-                    .WithOne(c => c.Post)
-                    .HasForeignKey(c => new { c.PostId, c.AccountId })
+                    .WithOne()
                     .OnDelete(DeleteBehavior.Cascade);
 
                 post.HasMany(p => p.Pictures)
-                    .WithOne(p => p.Post)
-                    .HasForeignKey(p => new { p.PostId, p.AccountId })
+                    .WithOne()
                     .OnDelete(DeleteBehavior.Cascade);
 
                 post.HasMany(p => p.Likes)
                     .WithOne(p => p.Post)
                     .HasForeignKey(p => new { p.PostId, p.AccountId });
-            });
-            builder.Entity<TimelinePostComment>(comment =>
-            {
-                comment.Property(c => c.PostId)
-                    .IsRequired();
-
-                comment.Property(c => c.AccountId)
-                    .IsRequired();
-
-                comment.HasKey(c => new { c.CommentId, c.AccountId, c.PostId });
-
-                comment.HasOne(c => c.Account)
-                    .WithMany()
-                    .HasForeignKey(c => c.AccountId);
-
-                comment.HasOne(c => c.Comment)
-                    .WithOne()
-                    .HasForeignKey<TimelinePostComment>(c => c.CommentId);
             });
             builder.Entity<TimelinePostLike>(like =>
             {
@@ -465,20 +448,6 @@ namespace ApiTools.Data
                     .WithMany()
                     .HasForeignKey(l => l.LikerId)
                     .OnDelete(DeleteBehavior.Cascade);
-            });
-            builder.Entity<TimelinePostPicture>(picture =>
-            {
-                picture.HasKey(p => new { p.AccountId, p.PostId, p.PictureId });
-
-                picture.HasOne(p => p.Account)
-                    .WithMany()
-                    .HasForeignKey(p => p.AccountId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                picture.HasOne(p => p.Picture)
-                    .WithMany()
-                    .HasForeignKey(p => p.PictureId)
-                    .OnDelete(DeleteBehavior.ClientCascade);
             });
             #endregion
             #region UTC-hack

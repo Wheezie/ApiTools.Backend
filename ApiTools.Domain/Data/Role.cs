@@ -35,5 +35,11 @@ namespace ApiTools.Domain.Data
         /// <value></value>
         public List<Account> Members { get; set; }
             = new List<Account>();
+
+        /// <summary>
+        /// Blog role access
+        /// </summary>
+        public List<BlogRoleAccess> BlogAccess { get; set; }
+            = new List<BlogRoleAccess>();
     }
 }

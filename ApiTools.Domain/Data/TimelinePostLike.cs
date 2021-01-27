@@ -19,7 +19,6 @@ namespace ApiTools.Domain.Data
         public uint PostId { get; set; }
 
 
-
         /// <summary>
         /// Account
         /// </summary>

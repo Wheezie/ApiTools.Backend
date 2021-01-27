@@ -18,7 +18,7 @@ namespace ApiTools.Data
                 .Build();
 
             DbContextOptionsBuilder<ApiDbContext> optionsBuilder = new DbContextOptionsBuilder<ApiDbContext>();
-            optionsBuilder.UseDbOptions(config.GetConnectionString("ApiTools"));
+            optionsBuilder.UseDbOptions(config.GetConnectionString("ApiDbContext"));
 
             return new ApiDbContext(optionsBuilder.Options);
         }

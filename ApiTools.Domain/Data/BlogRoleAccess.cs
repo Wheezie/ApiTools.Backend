@@ -1,8 +1,8 @@
-using ApiTools.Domain.Data.Base;
+﻿using ApiTools.Domain.Data.Base;
 
 namespace ApiTools.Domain.Data
 {
-    public class BlogAccess : AccessBase
+    public class BlogRoleAccess : RoleAccess
     {
         /// <summary>
         /// Blog identifier

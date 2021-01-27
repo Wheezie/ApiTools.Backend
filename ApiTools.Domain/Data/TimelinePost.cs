@@ -8,17 +8,14 @@ namespace ApiTools.Domain.Data
         /// <summary>
         /// Pictures
         /// </summary>
-        public List<TimelinePostPicture> Pictures { get; set; }
-            = new List<TimelinePostPicture>();
+        public ICollection<Picture> Pictures { get; set; }
         /// <summary>
         /// Comments
         /// </summary>
-        public List<TimelinePostComment> Comments { get; set; }
-            = new List<TimelinePostComment>();
+        public ICollection<Comment> Comments { get; set; }
         /// <summary>
         /// Likes
         /// </summary>
-        public List<TimelinePostLike> Likes { get; set; }
-            = new List<TimelinePostLike>();
+        public ICollection<TimelinePostLike> Likes { get; set; }
     }
 }

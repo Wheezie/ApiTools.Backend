@@ -31,15 +31,17 @@ namespace ApiTools.Domain.Data
         /// </summary>
         public Visibility Visibility { get; set; }
         /// <summary>
-        /// Access grants
+        /// User access grants
         /// </summary>
-        public List<BlogAccess> Access { get; set; }
-            = new List<BlogAccess>();
+        public ICollection<BlogUserAccess> UserAccess { get; set; }
+        /// <summary>
+        /// Role access grants
+        /// </summary>
+        public ICollection<BlogRoleAccess> RoleAccess { get; set; }
         /// <summary>
         /// Associated posts
         /// </summary>
-        public List<BlogPost> Posts { get; set; }
-            = new List<BlogPost>();
+        public ICollection<BlogPost> Posts { get; set; }
 
 
         /// <summary>
