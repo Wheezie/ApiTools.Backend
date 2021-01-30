@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTools.Data", "ApiTools.D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTools.Business", "ApiTools.Business\ApiTools.Business.csproj", "{F496E1CA-1D9D-42AF-884F-5FB6D714FB71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiTools", "ApiTools\ApiTools.csproj", "{163C226F-59AC-4FA2-854D-51F0D0EE9D78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTools", "ApiTools\ApiTools.csproj", "{163C226F-59AC-4FA2-854D-51F0D0EE9D78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiTools.Business.Tests", "ApiTools.Business.Tests\ApiTools.Business.Tests.csproj", "{8BB03EBE-7480-49E8-97FB-5F3EEB83A063}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{163C226F-59AC-4FA2-854D-51F0D0EE9D78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{163C226F-59AC-4FA2-854D-51F0D0EE9D78}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{163C226F-59AC-4FA2-854D-51F0D0EE9D78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BB03EBE-7480-49E8-97FB-5F3EEB83A063}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BB03EBE-7480-49E8-97FB-5F3EEB83A063}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BB03EBE-7480-49E8-97FB-5F3EEB83A063}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BB03EBE-7480-49E8-97FB-5F3EEB83A063}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

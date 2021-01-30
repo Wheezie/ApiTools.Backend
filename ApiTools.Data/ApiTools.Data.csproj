@@ -5,8 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleToSuffix Include=".Tests" />
-    <InternalsVisibleTo Include="ApiTools.Api" />
+    <InternalsVisibleTo Include="ApiTools" />
   </ItemGroup>
 
   <ItemGroup>
