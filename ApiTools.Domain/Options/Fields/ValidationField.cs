@@ -2,7 +2,7 @@
 
 namespace ApiTools.Domain.Options.Fields
 {
-    public class ValidationField
+    public abstract class ValidationField
     {
         private int minimum;
         private int maximum;
