@@ -4,17 +4,19 @@ namespace ApiTools.Domain.Options.Fields
 {
     public class ValidationField
     {
-        private int _minimum;
-        private int _maximum;
+        private int minimum;
+        private int maximum;
+
+        protected string fieldName;
 
         public int Minimum
         {
-            get => _minimum;
+            get => minimum;
             set
             {
-                if (_minimum != value)
+                if (minimum != value)
                 {
-                    _minimum = value;
+                    minimum = value;
 
                     RectifyValues();
                 }
@@ -22,26 +24,26 @@ namespace ApiTools.Domain.Options.Fields
         }
         public int Maximum
         {
-            get => _maximum;
+            get => maximum;
             set
             {
-                if (_maximum != value)
+                if (maximum != value)
                 {
-                    _maximum = value;
+                    maximum = value;
 
                     RectifyValues();
                 }
             }
         }
 
-        public virtual bool Validate(IList<BadField> badFields, ref string inputString, string fieldName)
+        public virtual bool Validate(IList<BadField> badFields, string inputString, string fieldName)
         {
             inputString = inputString.Trim();
-            if (inputString.Length < _minimum)
+            if (inputString.Length < minimum)
             {
                 badFields.Add(new BadField(fieldName, BadField.ToShort));
             }
-            else if (inputString.Length > _maximum)
+            else if (inputString.Length > maximum)
             {
                 badFields.Add(new BadField(fieldName, BadField.ToLong));
             }
@@ -56,11 +58,11 @@ namespace ApiTools.Domain.Options.Fields
         private void RectifyValues()
         {
             // Switch around variables if they are in the incorrect order.
-            if (_minimum > _maximum)
+            if (minimum > maximum)
             {
-                _maximum += _minimum;
-                _minimum = _maximum - _minimum;
-                _maximum -= _minimum;
+                maximum += minimum;
+                minimum = maximum - minimum;
+                maximum -= minimum;
             }
         }
     }

@@ -8,9 +8,9 @@ namespace ApiTools.Domain.Options.Fields
         public bool Number { get; set; }
         public bool SpecialCharacter { get; set; }
 
-        public override bool Validate(IList<BadField> badFields, ref string inputString, string fieldName)
+        public override bool Validate(IList<BadField> badFields, string inputString, string fieldName)
         {
-            bool result = base.Validate(badFields, ref inputString, fieldName);
+            bool result = base.Validate(badFields, inputString, fieldName);
             if (Number && !inputString.Any(c => char.IsDigit(c)))
             {
                 badFields.Add(new BadField(fieldName, BadField.RequiresDigits));

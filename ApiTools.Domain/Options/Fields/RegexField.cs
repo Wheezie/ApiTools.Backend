@@ -16,7 +16,7 @@ namespace ApiTools.Domain.Options.Fields
             }
         }
 
-        public override bool Validate(IList<BadField> badFields, ref string inputString, string fieldName)
+        public override bool Validate(IList<BadField> badFields, string inputString, string fieldName)
         {
             inputString = inputString.Trim();
             if (!RegexObject.IsMatch(inputString))
