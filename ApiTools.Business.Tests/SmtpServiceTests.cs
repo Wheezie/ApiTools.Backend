@@ -1,5 +1,6 @@
 using ApiTools.Business.Contracts;
 using ApiTools.Domain;
+using ApiTools.Domain.Exceptions;
 using MailKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -105,7 +106,7 @@ namespace ApiTools.Business.Tests
             SetupSmtpService(false);
 
             // Act & Assert
-            await Assert.ThrowsAsync<SmtpProtocolException>(() => service.EnsureConnection());
+            await Assert.ThrowsAsync<SmtpException>(() => service.EnsureConnection());
             loggerMock.CatchExceptionLog<SmtpService, SmtpProtocolException>($"Couldn't establish connection with the SMTP host {hostname} after the second attempt.", LogLevel.Error, Times.Once());
         }
 
@@ -120,11 +121,11 @@ namespace ApiTools.Business.Tests
             SetupSmtpService(false);
 
             // Act & Assert 1
-            await Assert.ThrowsAsync<AuthenticationException>(() => service.EnsureConnection());
+            await Assert.ThrowsAsync<SmtpException>(() => service.EnsureConnection());
             loggerMock.CatchExceptionLog<SmtpService, AuthenticationException>($"Authentication failed with the SMTP host {hostname}", LogLevel.Error, Times.Once());
 
             // Act & Assert 2
-            await Assert.ThrowsAsync<SaslException>(() => service.EnsureConnection());
+            await Assert.ThrowsAsync<SmtpException>(() => service.EnsureConnection());
             loggerMock.CatchExceptionLog<SmtpService, SaslException>($"Authentication failed with the SMTP host {hostname}", LogLevel.Error, Times.Once());
         }
 
@@ -287,7 +288,7 @@ namespace ApiTools.Business.Tests
             SetupSmtpService();
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => service.SendAsync(message));
+            await Assert.ThrowsAsync<SmtpException>(() => service.SendAsync(message));
             loggerMock.CatchExceptionLog<SmtpService, Exception>("Couldn't send mail to \"receiver@domain.tld\"", LogLevel.Error, Times.Once());
         }
         #endregion

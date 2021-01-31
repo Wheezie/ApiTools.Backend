@@ -1,5 +1,6 @@
 ﻿using ApiTools.Business.Contracts;
 using ApiTools.Domain;
+using ApiTools.Domain.Exceptions;
 using MailKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +20,7 @@ namespace ApiTools.Business
         private readonly ISmtpClient smtpClient;
         private readonly ILogger<SmtpService> logger;
         private readonly IOptions<AppSettings> settings;
+        private readonly IParserService parserService;
 
         private bool isDisposing = false;
 
@@ -41,7 +44,7 @@ namespace ApiTools.Business
                     message.From.Add(new MailboxAddress(settings.Value.Mail.Credentials.From, settings.Value.Mail.Credentials.From));
                 }
 
-                await EnsureConnection().ConfigureAwait(false);
+                await EnsureConnection(cancellationToken).ConfigureAwait(false);
 
                 try
                 {
@@ -50,13 +53,12 @@ namespace ApiTools.Business
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Couldn't send mail to {Addressess}", message.To);
-                    throw;
+                    LogErrorAndThrowException(ex, "Couldn't send mail to {Addressess}", message.To);
                 }
             }
         }
 
-        public Task SendAsync(string subject, TextPart body, string sender, string receiver, CancellationToken cancellationToken = default)
+        public Task SendAsync(string subject, MimePart body, string sender, string receiver, CancellationToken cancellationToken = default)
         {
             var mimeMessage = new MimeMessage
             {
@@ -69,17 +71,17 @@ namespace ApiTools.Business
             return SendAsync(mimeMessage, cancellationToken);
         }
 
-        public Task SendAsync(string subject, string body, string sender, string receiver, CancellationToken cancellationToken = default)
-            => SendAsync(subject, new TextPart("plain", body), sender, receiver, cancellationToken);
+        public Task SendAsync(string subject, string textBody, string sender, string receiver, CancellationToken cancellationToken = default)
+            => SendAsync(subject, new TextPart("plain", textBody), sender, receiver, cancellationToken);
 
-        public async Task EnsureConnection()
+        public async Task EnsureConnection(CancellationToken cancellationToken = default)
         {
             var mailSettings = settings.Value.Mail;
-            if (!smtpClient.IsConnected)
+            if (!cancellationToken.IsCancellationRequested && !smtpClient.IsConnected)
             {
                 try
                 {
-                    await Connect()
+                    await Connect(cancellationToken)
                         .ConfigureAwait(false);
                 }
                 catch (Exception ex) when (ex is ProtocolException || ex is SocketException)
@@ -94,17 +96,15 @@ namespace ApiTools.Business
 #if DEBUG
                     }
 #endif
-
                     try
                     {
                         // Second attempt
-                        await Connect()
-                        .ConfigureAwait(false);
+                        await Connect(cancellationToken)
+                            .ConfigureAwait(false);
                     }
                     catch (Exception ex2) when (ex is ProtocolException || ex is SocketException)
                     {
-                        logger.LogError(ex2, "Couldn't establish connection with the SMTP host {Host} after the second attempt.", mailSettings.Hostname);
-                        throw;
+                        LogErrorAndThrowException(ex2, "Couldn't establish connection with the SMTP host {Host} after the second attempt.", mailSettings.Hostname);
                     }
                 }
 
@@ -114,32 +114,37 @@ namespace ApiTools.Business
                 {
                     await smtpClient.AuthenticateAsync(
                             mailSettings.Credentials.Username,
-                            mailSettings.Credentials.Password)
+                            mailSettings.Credentials.Password,
+                            cancellationToken)
                         .ConfigureAwait(false);
                     logger.LogDebug("Authenticated on the SMTP host {Host}", mailSettings.Hostname);
                 }
                 catch (Exception ex) when (ex is AuthenticationException || ex is SaslException)
                 {
-                    logger.LogError(ex, "Authentication failed with the SMTP host {Host}", mailSettings.Hostname);
-                    throw;
+                    LogErrorAndThrowException(ex, "Authentication failed with the SMTP host {Host}", mailSettings.Hostname);
                 }
             }
         }
-
-        private Task Connect()
-            => smtpClient.ConnectAsync(
-                    settings.Value.Mail.Hostname,
-                    settings.Value.Mail.Port,
-                    settings.Value.Mail.Ssl);
-
         public void Dispose()
         {
             if (!isDisposing)
             {
                 isDisposing = true;
-
                 smtpClient.Dispose();
             }
+        }
+
+        private Task Connect(CancellationToken cancellationToken = default)
+            => smtpClient.ConnectAsync(
+                    settings.Value.Mail.Hostname,
+                    settings.Value.Mail.Port,
+                    settings.Value.Mail.Ssl,
+                    cancellationToken);
+
+        private void LogErrorAndThrowException(Exception exception, string message, params object[] args)
+        {
+            logger.LogError(exception, message, args);
+            throw new SmtpException(message, exception);
         }
     }
 }
