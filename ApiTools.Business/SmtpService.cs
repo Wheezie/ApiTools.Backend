@@ -74,6 +74,20 @@ namespace ApiTools.Business
         public Task SendAsync(string subject, string textBody, string sender, string receiver, CancellationToken cancellationToken = default)
             => SendAsync(subject, new TextPart("plain", textBody), sender, receiver, cancellationToken);
 
+        public async Task<MimeMessage> FetchHtmlBody(string filePath, IDictionary<string, string> replace, CancellationToken cancellationToken = default)
+        {
+            MimeMessage message = new MimeMessage
+            {
+                Body = new TextPart("html")
+                {
+                    Text = await parserService.ParseHtmlFromTemplate(filePath, replace, cancellationToken)
+                        .ConfigureAwait(false)
+                }
+            };
+
+            return message;
+        }
+
         public async Task EnsureConnection(CancellationToken cancellationToken = default)
         {
             var mailSettings = settings.Value.Mail;
