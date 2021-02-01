@@ -24,11 +24,12 @@ namespace ApiTools.Business
 
         private bool isDisposing = false;
 
-        public SmtpService(ILogger<SmtpService> logger, IOptions<AppSettings> settings, ISmtpClient smtpClient = null)
+        public SmtpService(ILogger<SmtpService> logger, IOptions<AppSettings> settings, IParserService parserService, ISmtpClient smtpClient = null)
         {
             this.smtpClient = smtpClient ?? new SmtpClient();
             this.settings = settings;
             this.logger = logger;
+            this.parserService = parserService;
         }
 
         public async Task SendAsync(MimeMessage message, CancellationToken cancellationToken = default)
@@ -71,16 +72,16 @@ namespace ApiTools.Business
             return SendAsync(mimeMessage, cancellationToken);
         }
 
-        public Task SendAsync(string subject, string textBody, string sender, string receiver, CancellationToken cancellationToken = default)
-            => SendAsync(subject, new TextPart("plain", textBody), sender, receiver, cancellationToken);
+        public Task SendAsync(string subject, string plainBody, string sender, string receiver, CancellationToken cancellationToken = default)
+            => SendAsync(subject, new TextPart("plain", plainBody), sender, receiver, cancellationToken);
 
-        public async Task<MimeMessage> FetchHtmlBody(string filePath, IDictionary<string, string> replace, CancellationToken cancellationToken = default)
+        public async Task<MimeMessage> FetchHtmlBodyAsync(string filePath, IDictionary<string, string> replace, CancellationToken cancellationToken = default)
         {
             MimeMessage message = new MimeMessage
             {
                 Body = new TextPart("html")
                 {
-                    Text = await parserService.ParseHtmlFromTemplate(filePath, replace, cancellationToken)
+                    Text = await parserService.ParseFromTemplateAsync(filePath, replace, cancellationToken)
                         .ConfigureAwait(false)
                 }
             };

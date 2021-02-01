@@ -33,13 +33,13 @@ namespace ApiTools.Business.Contracts
         /// Send a mail message over smtp
         /// </summary>
         /// <param name="subject">Mail subject</param>
-        /// <param name="textBody">Mail contents</param>
+        /// <param name="plainBody">Mail contents in plain text</param>
         /// <param name="sender">Sender mail address</param>
         /// <param name="receiver">Receiver mail address</param>
         /// <param name="cancellationToken">Task cancellation token</param>
         /// <exception cref="SmtpException">An error occurred sending the email</exception>
         /// <exception cref="OperationCanceledException">Operation token was cancelled</exception>
-        Task SendAsync(string subject, string textBody, string sender, string receiver, CancellationToken cancellationToken = default);
+        Task SendAsync(string subject, string plainBody, string sender, string receiver, CancellationToken cancellationToken = default);
         /// <summary>
         /// Retrieve an html body from a file and format it using.
         /// </summary>
@@ -50,6 +50,6 @@ namespace ApiTools.Business.Contracts
         /// <exception cref="System.IO.IOException">An error occurred parsing/reading the template</exception>
         /// <exception cref="OperationCanceledException">Operation token was cancelled</exception>
         /// <returns>MimeMessage with the parsed mail body (formated)</returns>
-        Task<MimeMessage> FetchHtmlBody(string filePath, IDictionary<string, string> replace, CancellationToken cancellationToken = default);
+        Task<MimeMessage> FetchHtmlBodyAsync(string filePath, IDictionary<string, string> replace, CancellationToken cancellationToken = default);
     }
 }

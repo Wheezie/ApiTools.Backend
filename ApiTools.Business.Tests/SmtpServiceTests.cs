@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -20,6 +21,7 @@ namespace ApiTools.Business.Tests
         private readonly Mock<ILogger<SmtpService>> loggerMock;
         private readonly Mock<IOptions<AppSettings>> optionsMock;
         private readonly Mock<ISmtpClient> smtpClientMock;
+        private readonly Mock<IParserService> parserServiceMock;
 
         private SmtpService service;
         
@@ -45,6 +47,8 @@ namespace ApiTools.Business.Tests
                         Ssl = false,
                     }
                 });
+
+            parserServiceMock = new Mock<IParserService>();
 
             smtpClientMock = new Mock<ISmtpClient>();
         }
@@ -292,7 +296,34 @@ namespace ApiTools.Business.Tests
             loggerMock.CatchExceptionLog<SmtpService, Exception>("Couldn't send mail to \"receiver@domain.tld\"", LogLevel.Error, Times.Once());
         }
         #endregion
+        #region FetchHtmlBodyAsync
+        [Fact]
+        public async Task FetchHtmlBodyAsync_Valid()
+        {
+            // Arrange
+            parserServiceMock.Setup(x => x.ParseFromTemplateAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult("A formatted template response"));
 
+            SetupSmtpService();
+
+            // Act
+            MimeMessage message = await service.FetchHtmlBodyAsync("./somefile.html", null);
+
+            Assert.Equal("A formatted template response", ((TextPart)message.Body).Text);
+        }
+        [Fact]
+        public async Task FetchHtmlBodyAsync_ShouldNotCatch()
+        {
+            // Arrange
+            parserServiceMock.Setup(x => x.ParseFromTemplateAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
+                .Throws(new OperationCanceledException());
+
+            SetupSmtpService();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(() => service.FetchHtmlBodyAsync("./somefile.html", null));
+        }
+        #endregion
         private void SetupSmtpService(bool setupSmtpConnection = true)
         {
             if (setupSmtpConnection)
@@ -303,12 +334,12 @@ namespace ApiTools.Business.Tests
                     .Returns(() => Task.Run(() => { }));
             }
 
-            service = new SmtpService(loggerMock.Object, optionsMock.Object, smtpClientMock.Object);
+            service = new SmtpService(loggerMock.Object, optionsMock.Object, parserServiceMock.Object, smtpClientMock.Object);
         }
 
         public void Dispose()
         {
-            service.Dispose();
+            service?.Dispose();
         }
     }
 }
