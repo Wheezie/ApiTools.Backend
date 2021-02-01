@@ -70,7 +70,6 @@ namespace ApiTools.Business.Tests
             {
                 { "TO_REPLACE", "Replaced" },
                 { "TO_REPLACE2", "Replaced" },
-                { "NON_EXISTANT", "NotReplaced" },
             };
 
             // Act
