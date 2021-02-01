@@ -18,7 +18,7 @@ namespace ApiTools.Business.Contracts
         /// <exception cref="IOException">An error occurred parsing/reading the template</exception>
         /// <exception cref="OperationCanceledException">Operation token was cancelled</exception>
         /// <returns>The parsed HTML string</returns>
-        Task<string> ParseFromTemplate(string templateFile, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default);
+        Task<string> ParseFromTemplateAsync(string templateFile, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default);
         /// <summary>
         /// Parse a template file and by relacing specific key interpolated strings with the provided values.
         /// </summary>
@@ -29,6 +29,6 @@ namespace ApiTools.Business.Contracts
         /// <exception cref="IOException">An error occurred parsing/reading the template</exception>
         /// <exception cref="OperationCanceledException">Operation token was cancelled</exception>
         /// <returns>The parsed HTML string</returns>Z
-        Task<string> ParseFromTemplate(StreamReader contentStream, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default);
+        Task<string> ParseFromTemplateAsync(StreamReader contentStream, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default);
     }
 }

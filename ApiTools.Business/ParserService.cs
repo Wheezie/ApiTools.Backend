@@ -9,13 +9,13 @@ namespace ApiTools.Business
 {
     internal class ParserService : IParserService
     {
-        public Task<string> ParseFromTemplate(string templateFile, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default)
+        public Task<string> ParseFromTemplateAsync(string templateFile, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default)
         {
             StreamReader reader = new StreamReader(templateFile);
-            return ParseFromTemplate(reader, stringsToParse, cancellationToken);
+            return ParseFromTemplateAsync(reader, stringsToParse, cancellationToken);
         }
 
-        public Task<string> ParseFromTemplate(StreamReader contentStream, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default)
+        public Task<string> ParseFromTemplateAsync(StreamReader contentStream, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default)
         {
             return Task.Run(() =>
             {

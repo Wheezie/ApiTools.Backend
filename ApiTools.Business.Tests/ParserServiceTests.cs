@@ -23,7 +23,7 @@ namespace ApiTools.Business.Tests
         public async Task ParseHtmlFromTemplate_WithPath_EmptyFileName(string path)
         {
             // Act
-            await Assert.ThrowsAnyAsync<ArgumentException>(() => parserService.ParseFromTemplate(path, null));
+            await Assert.ThrowsAnyAsync<ArgumentException>(() => parserService.ParseFromTemplateAsync(path, null));
         }
 
 
@@ -34,7 +34,7 @@ namespace ApiTools.Business.Tests
         public async Task ParseHtmlFromTemplate_WithPath_InvalidFileName(string path)
         {
             // Act
-            await Assert.ThrowsAnyAsync<IOException>(() => parserService.ParseFromTemplate(path, null));
+            await Assert.ThrowsAnyAsync<IOException>(() => parserService.ParseFromTemplateAsync(path, null));
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace ApiTools.Business.Tests
             };
 
             // Act
-            string result = await parserService.ParseFromTemplate(path, kvPairs);
+            string result = await parserService.ParseFromTemplateAsync(path, kvPairs);
 
             // Assert
             foreach (var pair in kvPairs)
@@ -74,7 +74,7 @@ namespace ApiTools.Business.Tests
             };
 
             // Act
-            string result = await parserService.ParseFromTemplate(reader, kvPairs);
+            string result = await parserService.ParseFromTemplateAsync(reader, kvPairs);
 
             // Assert
             foreach (var pair in kvPairs)
