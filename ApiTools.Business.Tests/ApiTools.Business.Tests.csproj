@@ -24,4 +24,10 @@
     <ProjectReference Include="..\ApiTools.Business\ApiTools.Business.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="assets\parser_test.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -9,19 +9,40 @@ namespace ApiTools.Business
 {
     internal class ParserService : IParserService
     {
-        public Task<string> ParseHtmlFromTemplate(string templateFile, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default)
+        public Task<string> ParseFromTemplate(string templateFile, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default)
         {
-            return Task.Run(async () =>
-            {
-                StringBuilder htmlBuilder;
-                using (StreamReader reader = new StreamReader(templateFile))
-                    htmlBuilder = new StringBuilder(await reader.ReadToEndAsync().ConfigureAwait(false));
+            StreamReader reader = new StreamReader(templateFile);
+            return ParseFromTemplate(reader, stringsToParse, cancellationToken);
+        }
 
-                foreach (var kvPair in stringsToParse)
-                    htmlBuilder.Replace(kvPair.Key, kvPair.Value);
+        public Task<string> ParseFromTemplate(StreamReader contentStream, IDictionary<string, string> stringsToParse, CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() =>
+            {
+                StringBuilder htmlBuilder = new StringBuilder();
+                using (contentStream)
+                {
+                    char[] buff = new char[256];
+                    int count = buff.Length;
+                    while (count > 0)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        count = contentStream.Read(buff, 0, buff.Length);
+                        htmlBuilder.Append(buff, 0, count);
+                    }
+                }
+
+                if (stringsToParse != null && stringsToParse.Count > 0)
+                {
+                    foreach (var kvPair in stringsToParse)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        htmlBuilder.Replace($"{{{kvPair.Key}}}", kvPair.Value);
+                    }
+                }
 
                 return htmlBuilder.ToString();
-            });
+            }, cancellationToken);
         }
     }
 }
