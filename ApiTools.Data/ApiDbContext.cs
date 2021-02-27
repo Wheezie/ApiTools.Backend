@@ -384,7 +384,7 @@ namespace ApiTools.Data
             });
             #endregion
             #region Session
-            builder.Entity<JwtSession>(session =>
+            builder.Entity<AccountSession>(session =>
             {
                 session.ToTable("sessions");
 

@@ -96,7 +96,7 @@ namespace ApiTools.Domain.Data
         /// <summary>
         /// Login JWT sessions
         /// </summary>
-        public ICollection<JwtSession> Sessions { get; set; }
+        public ICollection<AccountSession> Sessions { get; set; }
 
         /// <summary>
         /// Account invite

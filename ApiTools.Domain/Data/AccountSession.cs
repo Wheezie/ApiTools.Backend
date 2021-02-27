@@ -2,7 +2,7 @@
 
 namespace ApiTools.Domain.Data
 {
-    public class JwtSession
+    public class AccountSession
     {
         /// <summary>
         /// Session token
