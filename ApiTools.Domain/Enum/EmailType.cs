@@ -6,12 +6,12 @@ namespace ApiTools.Domain
     public enum EmailType : byte
     {
         /// Banned address
-        Banned = 0,
+        Banned = 1,
         /// Primary account address
-        Primary = 1,
+        Primary = 2,
         /// Additional address
-        Additional = 2,
+        Additional = 4,
         /// Recovery address
-        Recovery = 4
+        Recovery = 8
     }
 }
