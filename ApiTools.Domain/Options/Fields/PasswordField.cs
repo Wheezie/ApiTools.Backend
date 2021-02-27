@@ -8,6 +8,11 @@ namespace ApiTools.Domain.Options.Fields
         public bool Number { get; set; }
         public bool SpecialCharacter { get; set; }
 
+        public PasswordField()
+        {
+            Maximum = int.MaxValue;
+        }
+
         public override bool Validate(IList<BadField> badFields, string inputString, string fieldName)
         {
             bool result = base.Validate(badFields, inputString, fieldName);

@@ -20,7 +20,7 @@ namespace ApiTools.Business.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public async Task ParseHtmlFromTemplate_WithPath_EmptyFileName(string path)
+        public async Task ParseHtmlFromTemplateAsync_WithPath_EmptyFileName(string path)
         {
             // Act
             await Assert.ThrowsAnyAsync<ArgumentException>(() => parserService.ParseFromTemplateAsync(path, null));
@@ -31,14 +31,14 @@ namespace ApiTools.Business.Tests
         [InlineData("C:\\invalid\\path")]
         [InlineData("/invalid/path")]
         [InlineData("nonexistant_file.html")]
-        public async Task ParseHtmlFromTemplate_WithPath_InvalidFileName(string path)
+        public async Task ParseHtmlFromTemplateAsync_WithPath_InvalidFileName(string path)
         {
             // Act
             await Assert.ThrowsAnyAsync<IOException>(() => parserService.ParseFromTemplateAsync(path, null));
         }
 
         [Fact]
-        public async Task ParseHtmlFromTemplate_WithPath_Valid()
+        public async Task ParseHtmlFromTemplateAsync_WithPath_Valid()
         {
             // Arrange
             string path = "./assets/parser_test.html";
@@ -61,7 +61,7 @@ namespace ApiTools.Business.Tests
         }
 
         [Fact]
-        public async Task ParseHtmlFromTemplate_WithReader_Valid()
+        public async Task ParseHtmlFromTemplateAsync_WithReader_Valid()
         {
             // Arrange
             Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(TextTemplate));

@@ -11,6 +11,7 @@ namespace ApiTools.Domain.Options.Fields
         {
             if (string.IsNullOrWhiteSpace(inputString) && Required)
             {
+                badFields.Add(new BadField(fieldName, BadField.Required));
                 return false;
             }
 
