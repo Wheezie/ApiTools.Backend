@@ -1,7 +1,9 @@
-﻿namespace ApiTools.Domain.Options
+﻿using System;
+
+namespace ApiTools.Domain.Options
 {
     public class InviteSettings : EnabledSettings
     {
-        public int Lifetime { get; set; }
+        public TimeSpan Lifetime { get; set; }
     }
 }
