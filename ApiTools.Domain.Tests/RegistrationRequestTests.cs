@@ -1,8 +1,6 @@
 using ApiTools.Domain.Options;
 using ApiTools.Domain.Options.Fields;
 using ApiTools.Domain.Requests;
-using System;
-using System.Linq;
 using Xunit;
 
 namespace ApiTools.Domain.Tests
