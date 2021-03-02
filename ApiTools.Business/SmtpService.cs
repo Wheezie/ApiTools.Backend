@@ -45,7 +45,8 @@ namespace ApiTools.Business
                     message.From.Add(new MailboxAddress(settings.Value.Mail.Credentials.From, settings.Value.Mail.Credentials.From));
                 }
 
-                await EnsureConnection(cancellationToken).ConfigureAwait(false);
+                await EnsureConnection(cancellationToken)
+                    .ConfigureAwait(false);
 
                 try
                 {
@@ -103,10 +104,10 @@ namespace ApiTools.Business
                 {
                     logger.LogError("Couldn't establish connection with the SMTP host {Host}, retrying in 15s.", mailSettings.Hostname);
 #if DEBUG
-                    if (XUnitRunner.IsTesting())
+                    if (!XUnitRunner.IsTesting())
                     {
 #endif
-                    await Task.Delay(15)
+                    await Task.Delay(5)
                         .ConfigureAwait(false);
 #if DEBUG
                     }
