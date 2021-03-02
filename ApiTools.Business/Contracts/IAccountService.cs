@@ -71,8 +71,17 @@ namespace ApiTools.Business.Contracts
         /// <returns>A list of errors, empty if succeeded</returns>
         Task<IReadOnlyList<BadField>> RegisterAccountAsync(RegistrationRequest request, CancellationToken cancellationToken = default);
         /// <summary>
+        /// Save an account to the persistent storage.
+        /// </summary>
+        /// <param name="account">Account to store</param>
+        /// <param name="cancellationToken">Task cancellation token</param>
+        Task UpdateAccount(Account account, CancellationToken cancellationToken = default);
+        /// <summary>
         /// Update an account password.
         /// </summary>
+        /// <remarks>
+        /// NOTE: This will not save/update to the database.
+        /// </remarks>
         /// <param name="accountId">Account ID to update the password for</param>
         /// <param name="newValidatedPassword">Password to hash and replace the old one with.</param>
         /// <param name="cancellationToken">Task cancellation token</param>
@@ -81,6 +90,9 @@ namespace ApiTools.Business.Contracts
         /// <summary>
         /// Update an account password.
         /// </summary>
+        /// <remarks>
+        /// NOTE: This will not save/update to the database.
+        /// </remarks>
         /// <param name="account">Account to update the password for</param>
         /// <param name="newValidatedPassword">Password to hash and replace the old one with.</param>
         /// <param name="cancellationToken">Task cancellation token</param>

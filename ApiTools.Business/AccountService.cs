@@ -121,6 +121,8 @@ namespace ApiTools.Business
 
             if (badFields.Count < 1)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Account account = new Account
                 {
                     RegisteredDate = DateTime.UtcNow,
@@ -131,6 +133,7 @@ namespace ApiTools.Business
 
                 if (badFields.Count < 1)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     try
                     {
                         AccountEmail primaryEmail = await CreateEmailAsync(request.Email, EmailType.Primary, cancellationToken)
@@ -144,6 +147,7 @@ namespace ApiTools.Business
 
                     if (badFields.Count < 1)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         account.NormalizedUserName = account.UserName.ToUpper();
                         await UpdatePasswordAsync(account, request.Password, cancellationToken)
                             .ConfigureAwait(false);
@@ -164,6 +168,21 @@ namespace ApiTools.Business
                 }
             }
             return badFields;
+        }
+
+        public async Task UpdateAccount(Account account, CancellationToken cancellationToken = default)
+        {
+            if (!await dbContext.Users.AnyAsync(x => x.Id == account.Id && x.ConcurrencyStamp == account.ConcurrencyStamp, cancellationToken)
+                .ConfigureAwait(false))
+            {
+                throw new DbUpdateConcurrencyException("The account has already concurrently been saved to disk.");
+            }
+
+            account.ConcurrencyStamp = Guid.NewGuid().ToString("N");
+            dbContext.Users.Update(account);
+            await dbContext.SaveChangesAsync(cancellationToken)
+                .ConfigureAwait(false);
+
         }
         #region UpdatePasswordAsync
         public async Task UpdatePasswordAsync(ulong accountId, string newValidatedPassword, CancellationToken cancellationToken = default)
