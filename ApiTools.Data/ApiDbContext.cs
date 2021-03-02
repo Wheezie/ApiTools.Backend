@@ -13,6 +13,7 @@ namespace ApiTools.Data
         // Accounts are in the Users DbSet inherited from Identity
         public DbSet<AccountEmail> Emails { get; set; }
         public DbSet<AccountInvite> Invites { get; set; }
+        public DbSet<AccountSession> Sessions { get; set; }
 
         /* Album */
         public DbSet<Album> Albums { get; set; }
